@@ -29,27 +29,44 @@ Bu araç ikisini de aşıyor:
   ClientHello'yu SNI'nin ortasından iki ayrı TLS kaydına böler; DPI kutusu
   paket bazında baktığı için tam string'i bir arada görmüyor, gerçek sunucu
   ise TLS seviyesinde doğru şekilde yeniden birleştiriyor.
-- Roblox Studio'nun kendi ağ kütüphanesi standart `HTTPS_PROXY` ortam
-  değişkenine saygı gösteriyor (macOS'un genel sistem proxy ayarını
-  **görmüyor** — bu yüzden macOS'un `pf` güvenlik duvarıyla şeffaf yönlendirme
-  denendi ve çalışmadı; native uygulamalar için ortam değişkeni çok daha
-  güvenilir çıktı).
+- Roblox Studio'nun kendisi standart `HTTPS_PROXY` ortam değişkenine,
+  açılıştaki güncelleyicisi (`RobloxStudioInstaller`) ise macOS'un **sistem
+  proxy** ayarına bakıyor — başlatıcı ikisini de sadece Studio açıkken ayarlar.
+  (macOS `pf` ile şeffaf yönlendirme denendi, Mac'in kendi ürettiği trafiği
+  yakalamadığı için çalışmadı.)
 
 ## Kurulum
 
 ```bash
-git clone https://github.com/<kullanici-adin>/roblox-studio-tr-bypass.git
+git clone https://github.com/musabtopsakal/roblox-studio-tr-bypass.git
 cd roblox-studio-tr-bypass
 chmod +x install.sh
 ./install.sh
 ```
 
 Gereksinimler: [Homebrew](https://brew.sh), Xcode Command Line Tools
-(`xcode-select --install`). Script bir kere admin şifresi soracak (sistem
-DNS'ini yerel dnscrypt-proxy'ye yönlendirmek için).
+(`xcode-select --install`). Script bir kere admin şifresi soracak (sadece
+Roblox alan adlarının DNS'ini `/etc/resolver/` ile yerel dnscrypt-proxy'ye
+yönlendirmek için — sistem DNS'in değişmez, diğer siteler etkilenmez).
 
 Kurulum bitince masaüstünde **`RobloxStudioAc.command`** oluşur — Roblox
-Studio'yu açmak için bundan sonra hep buna çift tıkla.
+Studio'yu açmak için bundan sonra hep buna çift tıkla. Her açılışta admin
+şifresi sorar, çünkü:
+
+- Studio açıkken ciadpi ve **sistem SOCKS proxy'si** açılır (Studio'nun
+  güncelleyicisi ortam değişkenini değil sistem proxy'sini kullanıyor).
+- Studio (ve güncelleyicisi) **tamamen kapanınca** (Cmd+Q) proxy ve ciadpi
+  **otomatik kapanır** — arka planda hiçbir şey açık kalmaz, internetin
+  gereksiz yere yavaşlamaz.
+
+> Studio açıkken tüm trafik proxy'den geçtiği için internet biraz
+> yavaşlayabilir; bu normaldir, Studio'yu kapatınca geçer.
+
+### Eski sürümden (v1) güncelleyenler
+
+v1 sistem DNS'ini kalıcı olarak `127.0.0.1` yapıyor ve ciadpi'yi arka planda
+açık bırakıyordu (internet yavaşlığı buradan). Önce `./uninstall.sh`, sonra
+`git pull` ve `./install.sh` çalıştır.
 
 ## Güncelleme indirme zaman aşımı
 
@@ -75,7 +92,7 @@ mv extracted/RobloxStudio.app /Applications/RobloxStudio.app
 ./uninstall.sh
 ```
 
-Sistem DNS'ini ve ciadpi'yi kapatır, masaüstündeki başlatıcıyı siler.
+Proxy'yi, Roblox DNS yönlendirmesini ve ciadpi'yi kapatır, masaüstündeki başlatıcıyı siler.
 
 ## Sınırlar
 
